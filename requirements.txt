@@ -4,3 +4,4 @@ pyrebase4==4.5.0
 Flask-Login==0.6.2
 gunicorn
 Werkzeug==2.2.3
+setuptools

@@ -7,3 +7,4 @@ Werkzeug==2.2.3
 setuptools
 requests==2.27.1  # Intenta una versión anterior de requests
 urllib3==1.26.15 # Intenta una versión anterior de urllib3 que sea compatible con requests 2.27.1
+requests_toolbelt==0.9.1

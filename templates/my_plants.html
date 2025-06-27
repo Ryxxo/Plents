@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Plantas - Plents{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h2>Mis Plantas 🌱</h2>
+    {% if plants %}
+        <form method="POST" action="/my_plants">
+        {% for plant in plants %}
+            <div class="plant-card">
+                <strong>{{ plant.nombre }}</strong><br>
+                💧 Riego cada {{ plant.riego_cada_dias }} días<br>
+                ☀️ Luz: {{ plant.luz }}<br>
+                Último riego: {{ plant.last_watering_date }} (hace {{ plant.days_since_watering }} días)<br>
+                {% if plant.needs_watering %}
+                    <p style="color: green;">¡Es hora de regar esta planta! 💧</p>
+                    <button name="watered" value="{{ plant.nombre }}">Marcar como regada</button>
+                {% else %}
+                    <p style="color: gray;">No necesita riego aún.</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+        </form>
+    {% else %}
+        <p>No tienes plantas seleccionadas.</p>
+        <a href="{{ url_for('plants') }}">Seleccionar plantas</a>
+    {% endif %}
+</div>
+
+<script id="plants-data" type="application/json">
+  {{ plants | tojson | safe }}
+</script>
+
+<script>
+  const plants = JSON.parse(document.getElementById('plants-data').textContent);
+
+  if ('Notification' in window) {
+    if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }
+
+  function mostrarNotificacion(titulo, cuerpo) {
+    if (Notification.permission === 'granted') {
+      new Notification(titulo, { body: cuerpo });
+    }
+  }
+
+  function actualizarMascota() {
+    const necesitaRiego = plants.some(p => p.needs_watering);
+    const mascota = document.getElementById('mascota');
+    const mensaje = document.getElementById('mensaje-mascota');
+
+    if (necesitaRiego) {
+      mascota.textContent = "💧🥺";  // maceta triste
+      mensaje.textContent = "¡Tengo sed! Por favor, riega mis plantas 💧";
+      mensaje.style.color = "#d9534f"; // rojo
+    } else {
+      mascota.textContent = "🪴😁";  // maceta feliz
+      mensaje.textContent = "¡Estoy feliz! Gracias por cuidar de mí 😊";
+      mensaje.style.color = "#2a7a2a"; // verde
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Mostrar notificación si hay plantas para regar
+    const plantasParaRegar = plants.filter(p => p.needs_watering);
+    if (plantasParaRegar.length > 0) {
+      mostrarNotificacion('Plents', `Tienes ${plantasParaRegar.length} planta(s) que necesitan riego hoy!`);
+    }
+
+    // Actualizar estado mascota
+    actualizarMascota();
+  });
+</script>
+
+<div id="mascota-container" style="margin-top: 30px; text-align: center;">
+  <div id="mascota" style="font-size: 100px; user-select: none;">🌵</div>
+  <div id="mensaje-mascota" style="font-size: 18px; margin-top: 10px; color: #2a7a2a;"></div>
+</div>
+
+{% endblock %}

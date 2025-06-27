@@ -1,0 +1,90 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Plents{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Firebase App (el núcleo de Firebase) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+
+
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#4CAF50">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/static/service-worker.js')
+            .then(reg => console.log('ServiceWorker registrado:', reg))
+            .catch(err => console.log('Fallo en ServiceWorker:', err));
+        });
+      }
+    </script>
+</head>
+
+<body>
+
+  <nav class="bottom-nav">
+  <a href="{{ url_for('home') }}" class="{{ 'active' if request.path == '/home' else '' }}">
+    <span class="icon">🏠</span>
+    <span class="label">Inicio</span>
+  </a>
+  <a href="{{ url_for('my_plants') }}" class="{{ 'active' if request.path == '/my_plants' else '' }}">
+    <span class="icon">🌱</span>
+    <span class="label">Mis Plantas</span>
+  </a>
+  <a href="{{ url_for('plants') }}" class="{{ 'active' if request.path == '/plants' else '' }}">
+    <span class="icon">➕</span>
+    <span class="label">Agregar</span>
+  </a>
+  <a href="{{ url_for('profile') }}" class="{{ 'active' if request.path == '/profile' else '' }}">
+    <span class="icon">👤</span>
+    <span class="label">Perfil</span>
+  </a>
+</nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <script>
+    // Pedir permiso para notificaciones
+    if ('Notification' in window) {
+        if (Notification.permission === 'default') {
+        Notification.requestPermission();
+        }
+    }
+
+    // Función para mostrar notificación
+    function mostrarNotificacion(titulo, cuerpo) {
+        if (Notification.permission === 'granted') {
+        new Notification(titulo, { body: cuerpo });
+        }
+    }
+
+    // Simular verificación de plantas que necesitan riego
+    document.addEventListener('DOMContentLoaded', () => {
+        const plantasParaRegar = plantas.filter(p => p.needs_watering);
+
+        if (plantasParaRegar.length > 0) {
+            mostrarNotificacion('Plents', `Tienes ${plantasParaRegar.length} planta(s) que necesitan riego hoy!`);
+        }
+    });
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/static/service-worker.js')
+        .then(reg => console.log('ServiceWorker registrado:', reg))
+        .catch(err => console.log('Fallo en ServiceWorker:', err));
+    });
+  }
+</script>
+
+
+</body>
+</html>

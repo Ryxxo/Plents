@@ -1,0 +1,16 @@
+<!-- templates/login.html -->
+{% extends 'base.html' %}
+
+{% block title %}Iniciar sesión - Plents{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h1>🌿 Plents</h1>
+    <form method="POST" action="/login">
+        <input type="email" name="email" placeholder="Correo electrónico" required>
+        <input type="password" name="password" placeholder="Contraseña" required>
+        <button type="submit">Iniciar sesión</button>
+    </form>
+    <p>¿No tienes cuenta? <a href="/register">Regístrate aquí</a></p>
+</div>
+{% endblock %}

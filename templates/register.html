@@ -1,0 +1,17 @@
+<!-- templates/register.html -->
+{% extends 'base.html' %}
+
+{% block title %}Registrarse - Plents{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h1>🌱 Crear cuenta</h1>
+    <form method="POST" action="/register">
+        <input type="text" name="name" placeholder="Nombre completo" required>
+        <input type="email" name="email" placeholder="Correo electrónico" required>
+        <input type="password" name="password" placeholder="Contraseña" required>
+        <button type="submit">Registrarse</button>
+    </form>
+    <p>¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a></p>
+</div>
+{% endblock %}

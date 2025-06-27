@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Selecciona tus plantas - Plents{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <h2>Elige tus Plantas 🌿</h2>
+  <form method="POST" action="{{ url_for('plants') }}">
+    <div class="plant-list">
+      {% for plant in plants %}
+        <div class="plant-card">
+          <label>
+            <input type="checkbox" name="selected_plants" value="{{ plant.nombre }}"
+              {% if plant.nombre in session.get('my_plants', []) %}checked{% endif %}>
+            <strong>{{ plant.nombre }}</strong>
+          </label><br>
+
+          <!-- Imagen de la planta -->
+          <img src="{{ url_for('static', filename='plant_images/' + plant.nombre + '.png') }}"
+               alt="{{ plant.nombre }}" style="width: 100%; max-width: 180px; border-radius: 10px; margin: 8px 0;">
+
+          ☀️ Luz: {{ plant.luz }}<br>
+          💧 Riego: cada {{ plant.riego_cada_dias }} días<br>
+
+          <!-- Radio para seleccionar planta principal -->
+          <label>
+            <input type="radio" name="main_plant" value="{{ plant.nombre }}"
+              {% if plant.nombre == session.get('main_plant') %}checked{% endif %}>
+            Planta Principal
+          </label>
+        </div>
+      {% endfor %}
+    </div>
+    <button type="submit" class="btn">Guardar selección</button>
+  </form>
+</div>
+{% endblock %}

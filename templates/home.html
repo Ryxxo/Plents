@@ -1,0 +1,12 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}Inicio - Plents{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h1>Hola, {{ user }} 🌿</h1>
+    <a href="/plants">Seleccionar/Editar plantas</a><br>
+    <a href="/my_plants">Ver mis plantas</a>
+</div>
+{% endblock %}

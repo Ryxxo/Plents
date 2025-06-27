@@ -1,0 +1,19 @@
+# ⚠️ Ejecuta esto solo una vez en app.py y luego borrar
+
+plantas_iniciales = [
+    {
+        "nombre": "_",
+        "riego_cada_dias": _,
+        "luz": "_",
+        "last_watering_date": "",  # vacío al inicio
+    },
+
+]
+
+for planta in plantas_iniciales:
+    db.collection("plants").document(planta["nombre"]).set(planta)
+
+print("Plantas iniciales agregadas.")
+
+
+(Donde hay un _ llenar con la info)

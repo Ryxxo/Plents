@@ -3,7 +3,8 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, firestore
-from firebase_config import auth, db  # Asumo que usas auth y db de firebase_config.py
+from werkzeug.security import generate_password_hash, check_password_hash
+from firebase_config import db  
 
 # Inicializar Firebase Admin SDK solo si no está inicializado
 cred = credentials.Certificate("firebase_key.json")
@@ -38,49 +39,57 @@ def load_user(user_id):
         return User(user_data["id"], user_data["username"], user_data["email"], user_data["registered_on"])
     return None
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        try:
-            user = auth.sign_in_with_email_and_password(email, password)
-            session['user'] = user['idToken']
-
-            user_id = user['localId']
-            user_obj = User(id=user_id, username=email.split("@")[0], email=email, registered_on=datetime.now())
-            users[user_id] = {
-                "id": user_id,
-                "username": user_obj.username,
-                "email": user_obj.email,
-                "registered_on": user_obj.registered_on
-            }
-            login_user(user_obj)
-
-            return redirect(url_for('home'))
-        except Exception as e:
-            flash('Error al iniciar sesión: ' + str(e))
-    return render_template('login.html')
-
-@app.route('/logout', methods=['GET', 'POST'])
-def logout():
-    logout_user()
-    session.pop('user', None)
-    flash('Has cerrado sesión.')
-    return redirect(url_for('login'))
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        try:
-            user = auth.create_user_with_email_and_password(email, password)
+        hashed_password = generate_password_hash(password)
+
+        user_ref = db.collection('users').document(email)
+        if user_ref.get().exists:
+            flash("El usuario ya existe.")
+        else:
+            user_ref.set({
+                'email': email,
+                'password': hashed_password,
+                'registered_on': datetime.now().isoformat()
+            })
             flash('Registro exitoso. Inicia sesión.')
             return redirect(url_for('login'))
-        except Exception as e:
-            flash('Error en el registro: ' + str(e))
     return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        user_doc = db.collection('users').document(email).get()
+        if user_doc.exists:
+            user_data = user_doc.to_dict()
+            if check_password_hash(user_data['password'], password):
+                user_obj = User(id=email, username=email.split('@')[0], email=email, registered_on=datetime.now())
+                users[email] = {
+                    "id": email,
+                    "username": user_obj.username,
+                    "email": user_obj.email,
+                    "registered_on": user_obj.registered_on
+                }
+                login_user(user_obj)
+                return redirect(url_for('home'))
+            else:
+                flash("Contraseña incorrecta.")
+        else:
+            flash("Usuario no encontrado.")
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Has cerrado sesión.')
+    return redirect(url_for('login'))
 
 @app.route("/home")
 @login_required
@@ -108,11 +117,8 @@ def home():
     return render_template("home.html", user=user, streak=streak)
 
 @app.route("/plants", methods=["GET", "POST"])
+@login_required
 def plants():
-    user = session.get("user")
-    if not user:
-        return redirect(url_for("login"))
-
     docs = db.collection("plants").stream()
     all_plants = [doc.to_dict() for doc in docs]
 
@@ -174,7 +180,6 @@ def profile():
 @app.route("/")
 def index():
     return redirect(url_for("login"))
-
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)

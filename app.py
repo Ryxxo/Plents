@@ -3,11 +3,13 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, firestore
-from firebase_config import auth, db
+from firebase_config import auth, db  # Asumo que usas auth y db de firebase_config.py
 
-# Inicializar Firebase Admin SDK
+# Inicializar Firebase Admin SDK solo si no está inicializado
 cred = credentials.Certificate("firebase_key.json")
-firebase_admin.initialize_app(cred)
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred)
+
 db = firestore.client()
 
 app = Flask(__name__)
@@ -20,7 +22,6 @@ login_manager.login_view = "login"
 # Simulación simple de usuarios en memoria
 users = {
     "user1": {"id": "user1", "username": "Usuario1", "email": "user1@example.com", "password": "1234", "registered_on": datetime(2025,5,31)},
-    # Puedes agregar más usuarios aquí o conectar a Firebase Auth u otra base
 }
 
 class User(UserMixin):
@@ -29,7 +30,6 @@ class User(UserMixin):
         self.username = username
         self.email = email
         self.registered_on = registered_on
-
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -47,7 +47,6 @@ def login():
             user = auth.sign_in_with_email_and_password(email, password)
             session['user'] = user['idToken']
 
-            # Agregar usuario a Flask-Login
             user_id = user['localId']
             user_obj = User(id=user_id, username=email.split("@")[0], email=email, registered_on=datetime.now())
             users[user_id] = {
@@ -62,8 +61,6 @@ def login():
         except Exception as e:
             flash('Error al iniciar sesión: ' + str(e))
     return render_template('login.html')
-
-
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -90,7 +87,6 @@ def register():
 def home():
     user = current_user.username
 
-    # Manejo de racha (si quieres mantenerlo)
     today = datetime.now().date()
     last_visit_str = session.get("last_visit")
     streak = session.get("streak", 0)
@@ -129,7 +125,6 @@ def plants():
 
     return render_template("plants.html", plants=all_plants)
 
-
 @app.route("/my_plants", methods=["GET", "POST"])
 @login_required
 def my_plants():
@@ -138,7 +133,6 @@ def my_plants():
         return redirect(url_for("plants"))
 
     if request.method == "POST":
-        # ✅ Verifica si se presionó el botón de regar
         planta_regada = request.form.get("watered")
         if planta_regada:
             db.collection("plants").document(planta_regada).update({
@@ -171,13 +165,11 @@ def my_plants():
 
     return render_template("my_plants.html", plants=plants_details)
 
-
 @app.route("/profile")
 @login_required
 def profile():
     user = current_user
     return render_template("profile.html", user=user)
-
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)

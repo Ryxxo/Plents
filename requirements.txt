@@ -1,10 +1,5 @@
-Flask==2.2.5
+Flask==2.3.2
 firebase-admin==6.1.0
-pyrebase4==4.5.0
+# pyrebase4==4.5.0
 Flask-Login==0.6.2
-gunicorn
-Werkzeug==2.2.3
-setuptools
-requests==2.27.1  # Intenta una versión anterior de requests
-urllib3==1.26.15 # Intenta una versión anterior de urllib3 que sea compatible con requests 2.27.1
-requests_toolbelt==0.9.1
+werkzeug==2.0.3

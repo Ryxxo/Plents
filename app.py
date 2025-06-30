@@ -3,7 +3,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, firestore
-from firebase_config import auth
+from firebase_config import auth, db
 
 # Inicializar Firebase Admin SDK
 cred = credentials.Certificate("firebase_key.json")
